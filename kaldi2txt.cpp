@@ -10,7 +10,7 @@ using namespace std;
 int main(int argc, char *argv[])
 {
   int p,skip = 0;
-   const char* buf = "feat.txt";
+   const char* buf = argv[2];
    ifstream input_file(argv[1]);
    char line[256];
    string line_s;
