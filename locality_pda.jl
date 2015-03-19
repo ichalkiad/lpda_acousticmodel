@@ -26,7 +26,7 @@ function lpda{T,Q}(Data::AbstractMatrix{T},Labels::AbstractMatrix{Q},dims::Int64
 	 A_mul_B!(temp,Data,Di-Wint)
 	 A_mul_Bt!(B,temp,Data)
 
-	 #solve generalized eigen problem, contains eigenvalues and eigenvectors
+	 #solve generalized eigen problem, P contains eigenvalues and eigenvectors
 	 P = eigfact!(A,B)
 	 sorted_idx = sortperm(vec(P[:values]),rev=true)
 
@@ -34,20 +34,4 @@ function lpda{T,Q}(Data::AbstractMatrix{T},Labels::AbstractMatrix{Q},dims::Int64
 
 end
 
-#dims=20
-#X = rand(100,500)
-#C = Array(Int64,(1,500))
-#C[1:100] = 1
-#C[101:250] = 2
-#C[251:300] = 1
-#C[301:end] = 2
-#kint = 100
-#kpen = 100
-#Rint = 1.0
-#Rpen = 1.0
-#dist = "locality"
-#Data=X
-#Labels=C
 
-#(eigval,eigvec) = lpda(Data,Labels,dims)
-#(Wint,Wpen) = compute_weight_mats(X,C,kint,kpen,Rint,Rpen,dist)
