@@ -15,17 +15,8 @@ function compute_weight_mats{T,Q}(X::AbstractMatrix{T}, C::AbstractMatrix{Q}, ki
     Wpen = Array(Float64,(n,n))
 
     sa2 = sum(X.^2, 1)
-    if (dist=="locality")
-       At_mul_B!(r, X, X)
-    elseif (dist=="correlation")
-       #projection on unit hypersphere
-       X_norm = Array(Float64,(m,n))
-       for j = 1 : n
-       	   X_norm[:,j] = X[:,j]./sqrt(sa2[j])
-       end
-       At_mul_B!(r, X_norm, X_norm)
-    end
-
+    At_mul_B!(r, X, X)
+    
     #construct weight matrices
     for j = 1 : n
         for i = 1 : j-1
@@ -60,7 +51,7 @@ function compute_weight_mats{T,Q}(X::AbstractMatrix{T}, C::AbstractMatrix{Q}, ki
 	    end
 	    i = i + 1
 	end
- 
+
 	# e : edges,indices of neighbours in X
 	if (p-1 > kint)
  	   e_int = Array(Int, kint, 1)
@@ -106,7 +97,7 @@ function compute_weight_mats{T,Q}(X::AbstractMatrix{T}, C::AbstractMatrix{Q}, ki
 	       Wpen[i,j] = 0
 	    end
         end
-    
+
     end
 
     return (Wint, Wpen)
