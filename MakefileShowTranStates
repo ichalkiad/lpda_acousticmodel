@@ -1,3 +1,5 @@
+#Use this makefile in $KALDI/src/bin or add show-transitionStates.cc 
+#to the targets in the existing Makefile
 
 all:
 EXTRA_CXXFLAGS = -Wno-sign-compare
