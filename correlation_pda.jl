@@ -140,7 +140,6 @@ end
 #Labels=C
 #P = eigvecs
 #(Wint,Wpen) = compute_weight_mats(X,C,kint,kpen,Rint,Rpen,dist)
-(eigval,eigvec) = cpda(Data,Labels,dims)
+#(eigval,eigvec) = cpda(Data,Labels,dims)
 #f_uv(eigvec,eigvec[:,1],eigvec[:,2])
 #gradF_P(X,eigvec,Wint,Wpen)
-#(Wint,Wpen) = compute_weight_mats(X,C,kint,kpen,Rint,Rpen,dist)
