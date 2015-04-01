@@ -31,12 +31,12 @@ echo 'Done removing unnecessary delimiters.'
 
 #Make binary file for Julia/MatLab processing
 
-$JULIA txt2julia_ener.jl mfcc_si284_1.txt $OUTPUT_FDR $OUTPUT_FDR 
+#$JULIA txt2julia_ener.jl mfcc_si284_1.txt $OUTPUT_FDR $OUTPUT_FDR 
 
-$JULIA txt2julia_ener.jl mfcc_si284_2.txt $OUTPUT_FDR $OUTPUT_FDR
+#$JULIA txt2julia_ener.jl mfcc_si284_2.txt $OUTPUT_FDR $OUTPUT_FDR
 
 echo 'Features file ready for processing.'
 
-#$JULIA txt2julia_labels.jl labelled_utterances_total.txt $OUTPUT_FDR $OUTPUT_FDR
+$JULIA txt2julia_labels.jl frameLabels_total.txt $OUTPUT_FDR $OUTPUT_FDR
 
 echo 'Labels file ready for processing.'
