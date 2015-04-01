@@ -51,20 +51,32 @@ int main(int argc, char *argv[]) {
         KALDI_ERR << "Error opening symbol table file "<<phones_symtab_filename;
     }
     
+    
+    std::ofstream alignedUtter_f;
+    std::ofstream label_f;
+    
+    alignedUtter_f.open("labelled_utterances.txt");
+    label_f.open("frameLabels.txt");
+
     //Start reading alignments' file
     SequentialInt32VectorReader reader(alignments_rspecifier);
-
+    //int32 utter = 0;
     for (; !reader.Done(); reader.Next()) {
+
+      //utter++;
+
       std::string key = reader.Key();
       const std::vector<int32> &alignment = reader.Value();
 
       std::vector<std::vector<int32> > split;
       SplitToPhones(trans_model, alignment, &split);
 
-      // split_str is the alignment corresponding to frame i
+      // split_str is the alignment corresponding to phone i
       std::vector<std::string> split_str(split.size());
       std::vector<std::string> split_str_phones(split.size());
-      for (size_t i = 0; i < split.size(); i++) {
+      size_t i;
+      //int32 sum = 0;
+      for (i = 0; i < split.size(); i++) {
         std::ostringstream ss;
         std::string phone_s;
 	size_t j;
@@ -73,25 +85,36 @@ int main(int argc, char *argv[]) {
 	  //ss << split[i][j] << " ";
 	  //print Phone
 	  int32 phone = trans_model.TransitionIdToPhone(split[i][j]);
-	  phone_s = phones_symtab->Find(phone);
-	  ss << phone_s << "-"; 
+	  //phone_s = phones_symtab->Find(phone);
+	  ss << phone << "-"; 
 	  //print HMM state
 	  int32 hmm_state = trans_model.TransitionIdToHmmState(split[i][j]);	
 	  ss << hmm_state << "\n";
         } 
         split_str[i] = ss.str();
 
-        
+	//sum = sum + j;
+	
       }
-      //std::cout<<"utterance_id: "<< " ";
-      //std::cout << key << endl;
+      //std::alignedUtter_f<<"utterance_id: "<< " ";
+      alignedUtter_f << key << endl;
+      
+      //uncomment to get frame number per utterance
+      //alignedUtter_f << key << " ";
+      //alignedUtter_f << sum << endl;
+      //sum = 0;
 
       for (size_t i = 0; i < split_str.size(); i++)
-        std::cout << split_str[i];
-      //std::cout << '\n';
+      label_f << split_str[i];
+      
+      //label_f << '\n';
       
     }
     
+    //alignedUtter_f << utter <<endl;
+
+    label_f.close();
+    alignedUtter_f.close();
     delete syms;
   } catch(const std::exception &e) {
     std::cerr << e.what();
