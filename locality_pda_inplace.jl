@@ -20,14 +20,11 @@ function lpda!{T,Q}(e_values::AbstractVector{T},e_vectors::AbstractMatrix{T},Dat
 
    display("Mmapped arrays")
 
-   #temp = Array(Float64,(m,n))
-	 #A = Array(Float64,(m,m))
-	 A_mul_B!(temp,Data,Dp-Wpen)
+   A_mul_B!(temp,Data,Dp-Wpen)
    write(s1,temp)
 	 A_mul_Bt!(A,temp,Data)
    write(s2,A)
 
-	 #B = Array(Float64,(m,m))
 	 A_mul_B!(temp,Data,Di-Wint)
    write(s1,temp)
 	 A_mul_Bt!(B,temp,Data)
@@ -46,7 +43,7 @@ function lpda!{T,Q}(e_values::AbstractVector{T},e_vectors::AbstractMatrix{T},Dat
    for i = 1 : length(evals)
        (re,im) = (real(evals[i]),imag(evals[i]))
        if im == 0
-          real_evals[i] = (re,i)
+          real_evals[k] = (re,i)
           k = k + 1
        end
    end
@@ -55,9 +52,16 @@ function lpda!{T,Q}(e_values::AbstractVector{T},e_vectors::AbstractMatrix{T},Dat
    sorted_evals = sort(real_evals[1:k-1],by=x->x[1],rev=true)
 
    sorted_idx = zeros(k-1)
+   eigen_v = zeros(k-1)
    for i = 1 : length(sorted_evals)
        sorted_idx[i] = sorted_evals[i][2]
+       eigen_v[i] = sorted_evals[i][1]
    end
+
+   if (k-1 < dims)
+      print("Found only $(k-1) real eigenvalues.")
+   end
+   e_values[:] = eigen_v[1:min(k-1,dims)]
 
    #keep the corresponding eigenvectors
    e_vectors[:,:] = P[:vectors][:,sorted_idx[1:dims]]
