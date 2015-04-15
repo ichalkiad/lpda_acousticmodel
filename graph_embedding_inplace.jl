@@ -23,11 +23,11 @@ function compute_weight_mats!{T,Q}(Wint::SparseMatrixCSC{Float64,Int64},Wpen::Sp
 	      #cosine correlation distance
 	      for i = 1 : n
 	         r[i] = dot(X[:,i],X[:,j])
-	      end
-	    end
+        end
+     end
 
 	#display("Sample, distances")
-	display(j)
+	#display(j)
 	#display(r)
 	#readline(STDIN)
 
@@ -35,7 +35,7 @@ function compute_weight_mats!{T,Q}(Wint::SparseMatrixCSC{Float64,Int64},Wpen::Sp
 	#temp holds the indices of the neighbours in growing distance order
 	temp[:] = sortperm(r)
 
-  	#display("neighbours indices in growing dist")
+  #display("neighbours indices in growing dist")
 	#display(temp)
 	#readline(STDIN)
 
@@ -45,7 +45,7 @@ function compute_weight_mats!{T,Q}(Wint::SparseMatrixCSC{Float64,Int64},Wpen::Sp
 	i = 1
 	while (i <= n && (p<=kint || pp<=kpen))
 	      #leave self out of neighhbours list
-      	      if (temp[i] != j)
+        if (temp[i] != j)
 	      	 if (C[temp[i]]==C[j] && p<=kint)
 	            neighb_sameClass[p] = temp[i]
 	            p = p + 1
@@ -53,9 +53,9 @@ function compute_weight_mats!{T,Q}(Wint::SparseMatrixCSC{Float64,Int64},Wpen::Sp
 	            neighb_diffClass[pp] = temp[i]
 	            pp = pp + 1
 	      	 end
-      	      end
-      	      i = i + 1
-  	end
+        end
+        i = i + 1
+  end
 
 	#display("Neigh same class -- diff class")
 	#display(neighb_sameClass)
@@ -96,7 +96,7 @@ function compute_weight_mats!{T,Q}(Wint::SparseMatrixCSC{Float64,Int64},Wpen::Sp
 	   # 1-inner_product because of -d, l. 109,110
 	   d_int[:] = 1-r[e_int[:]]
 	   d_pen[:] = 1-r[e_pen[:]]
-	end
+  end
 
 	#display("Dists nns same class - diff class")
 	#display(d_int)
