@@ -1,4 +1,4 @@
-using MAT,MATLAB,HDF5,JLD,Clustering,KDTrees
+using MAT,MATLAB,HDF5,JLD
 
 
 Wint = load("/home/yannis/Desktop/Wint.jld")["Wint"]
@@ -11,7 +11,7 @@ labels_sampled = h5read("/home/yannis/Desktop/KALDI_norm_var/labels_sampled1M_no
 
 Data = mfcc_sampled
 (m,n) = size(Data)
-
+dims = 39
 
    #formulate generalized eigen problem
 	 D_diag = sum(Wint,2)
@@ -61,7 +61,7 @@ Data = mfcc_sampled
 
    display("Got eigvecs")
 
-
+save("/home/yannis/Desktop/P_LPDA.jld","P",e_vectors)
 
 
 
