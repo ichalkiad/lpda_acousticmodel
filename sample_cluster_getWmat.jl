@@ -9,11 +9,11 @@ using MAT,MATLAB,HDF5,JLD,Clustering,KDTrees
 #l = open("/home/yannis/Desktop/KALDI_norm_var/frameLabels2a.txt.bin")
 #labels = mmap_array(Float64, (n,1), l)
 
-kint = 15
-kpen = 15
+kint = 14
+kpen = 14
 Rint = 1000
 Rpen = 3000
-distance = "euclidean"
+distance = "correlation"
 
 ##Sample
 #mfcc_sampled = zeros(117,900000)
@@ -139,7 +139,7 @@ for i = 1 : size(distinct_labels,1)
             if distance=="euclidean"
               d[m] = norm(data[:,nn_idx_dense[m]]-current_feat,2).^2
             elseif distance=="correlation"
-              d[m] = 1 - dot(data[:,nn_idx_dense[m]],current_feat)
+              d[m] = 1 - dot(data[:,nn_idx_dense[m]],current_feat)/(norm(data[:,nn_idx_dense[m]],2)*norm(current_feat,2))
             end
         end
         Wint_dense = exp(-d./Rint)
