@@ -94,7 +94,7 @@ for i = 1 : k
             if distance=="euclidean"
               d[m] = norm(data[:,nn_idx_dense_pen[m]]-current_feat,2).^2
             elseif distance=="correlation"
-              d[m] = 1 - dot(data[:,nn_idx_dense_pen[m]],current_feat)
+              d[m] = 1 - dot(data[:,nn_idx_dense_pen[m]],current_feat)/(norm(data[:,nn_idx_dense[m]],2)*norm(current_feat,2))
             end
         end
         Wpen_dense = exp(-d./Rpen)
