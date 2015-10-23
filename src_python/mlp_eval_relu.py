@@ -163,6 +163,18 @@ class MLP(object):
         assert self.n_layers > 0
 
 
+        ws = []
+        bs = []
+        save_file1 = open('/home/users/gchalk/DNN_py/params_cpu')
+        for i in xrange(5):
+            a = cPickle.load(save_file1)
+            ws.append(a)
+            b = cPickle.load(save_file1)
+            bs.append(b)
+        save_file1.close()
+	print 'Loaded weights...'
+
+
         for i in xrange(self.n_layers):
             #input layer
             if i == 0: 
@@ -194,6 +206,8 @@ class MLP(object):
                     input=dropout_layer_input,
                     n_in=input_size,
                     n_out=hidden_layers_sizes[i],
+		    W=ws[i],
+		    b=bs[i],
                     activation=activations[i],
                     dropout_rate=dropout_rates[i]
                 )
@@ -205,6 +219,8 @@ class MLP(object):
                     input=layer_input,
                     n_in=input_size,
                     n_out=hidden_layers_sizes[i],
+	            W=ws[i],
+                    b=bs[i],
                     activation=activation
                 )
                 self.sigmoid_layers.append(sigmoid_layer)
@@ -212,19 +228,25 @@ class MLP(object):
 
         # The logistic regression layer gets as input the hidden units
         # of the last hidden layer
+	
+	
 
         if dropout_rates!=None:
             self.dropout_logRegr_layer = LogisticRegression(
                 input=self.dropout_layers[-1].output,
                 n_in=hidden_layers_sizes[-1],
-                n_out=n_out
+                n_out=n_out,
+	        W=ws[-1],
+                b=bs[-1]
             )
             self.dropout_params.extend(self.dropout_logRegr_layer.params)
         else:
             self.logRegressionLayer = LogisticRegression(
                 input=self.sigmoid_layers[-1].output,
                 n_in=hidden_layers_sizes[-1],
-                n_out=n_out
+                n_out=n_out,
+                W=ws[-1],
+                b=bs[-1]
             )
             self.sigmoid_params.extend(self.logRegressionLayer.params)
 
@@ -308,16 +330,15 @@ def load_dataset(i):
 
 
 
-def eval_mlp(batch_size=320,hidden_layers_sizes=[600,600,600,600]):
+def eval_mlp(batch_size=63301,hidden_layers_sizes=[600,600,600,600]):
     
     eval_data = numpy.array(h5py.File("/home/users/gchalk/DNN_py/eval_92_117D.h5","r")["mfcc"])
-    eval_set = (eval_data.transpose(),None)
+    eval_set = (eval_data,None)
    
     
     
     eval_set_x, valid_set_y = shared_dataset(eval_set)
-    
-    print eval_data
+   
     #print '... building the model'
 
     # allocate symbolic variables for the data
@@ -339,12 +360,10 @@ def eval_mlp(batch_size=320,hidden_layers_sizes=[600,600,600,600]):
            n_out=132
     )
 
-
+    
     n_eval_batches = eval_set_x.get_value(borrow=True).shape[0] / batch_size
     index = T.lscalar()
  
-    print n_eval_batches
-
     evaluate_model = theano.function(
         inputs=[index],
         outputs=classifier.predictions(),
