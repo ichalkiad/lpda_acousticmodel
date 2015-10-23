@@ -219,7 +219,7 @@ class MLP(object):
                     input=dropout_layer_input,
                     n_in=input_size,
                     n_out=hidden_layers_sizes[i],
-                    activation=activations[i],
+                    activation=activation,
                     dropout_rate=dropout_rates[i]
                 )
                 self.dropout_layers.append(dropout_layer)
@@ -319,6 +319,7 @@ def load_dataset(i):
     neighbors = numpy.array(h5py.File(path3,"r")["data"])
     wij = numpy.array(h5py.File(path4,"r")["Wij_diff"])
 
+    
 #    labels = labels - 1  # not when using pdf-ids
 #    labels = labels.T.astype(int)
     
@@ -330,25 +331,25 @@ def load_dataset(i):
     return (train_set_x,train_set_y,train_set_x_NN,wij_sh)
     
 
-def test_mlp(learning_rate_init=1.2,
-             learning_rate_decay=0.001,
-             L1_reg=0.0002,
-             L2_reg=0.0,
-             n_epochs_set=5,
-             n_epochs_per_chunk=5,
-             mom_params = {"start": 0.5, "end": 0.99, "interval": 10},
-             batch_size=256,
-             hidden_layers_sizes=[2048,2048,2048,39],
-             gamma=0.00002,
-             dropout_rates=[0.0, 0.5, 0.5, 0.5,0.5],
-             activations=[ReLU,ReLU,ReLU,ReLU],
-             squared_filter_length_limit=0,
+def test_mlp(learning_rate_init=0.9,
+             learning_rate_decay=0.01,
+             L1_reg=0.000,
+             L2_reg=0.000,
+             n_epochs_set=1,
+             n_epochs_per_chunk=50,
+             mom_params = {"start": 0.7, "end": 0.99, "interval": 10},
+             batch_size=320,
+             hidden_layers_sizes=[600, 600, 600, 600, 600],
+             gamma=0.000008,#0.0009,0.03
+             dropout_rates=[0.0, 0.4 ,0.4, 0.4, 0.4, 0.4],
+             activations=[ReLU, ReLU, ReLU, ReLU, ReLU],
+             squared_filter_length_limit=10.0,
              path="/home/users/gchalk/DNN_py/dnn_params",
              cost_path="/home/users/gchalk/DNN_py/obj_function",
              test_path="/home/users/gchalk/DNN_py/error_function",
              valid_path="/home/users/gchalk/DNN_py/valid_function",
-             params_cpu="/home/users/gchalk/DNN_py/params_cpu",
-             num_datasets=2
+             params_cpu="/home/users/gchalk/DNN_py/best_params_cpu",
+             num_datasets=10
              ):
     
     
@@ -356,25 +357,23 @@ def test_mlp(learning_rate_init=1.2,
     save_cost = open(cost_path,'wb')
     save_error_test = open(test_path,'wb')
     save_error_valid = open(valid_path,'wb')
-    final_params_cpu = open(params_cpu,'wb')
-
+#    final_params_cpu = open(params_cpu,'wb')
+    best_params_cpu  = open(    
    
     dataset_idx = 1  #dataset index
     (train_set_x,train_set_y,train_set_x_NN,wij_sh) = load_dataset(dataset_idx)
 
-    test_data = numpy.array(h5py.File("/home/users/gchalk/DNN_py/chunked_dataset/data_test.h5","r")["data"]).transpose()
-    test_labels = numpy.array(h5py.File("/home/users/gchalk/DNN_py/chunked_dataset/labels_test.h5","r")["labels"])
-    valid_data = numpy.array(h5py.File("/home/users/gchalk/DNN_py/chunked_dataset/data_valid.h5","r")["data"]).transpose()
-    valid_labels = numpy.array(h5py.File("/home/users/gchalk/DNN_py/chunked_dataset/labels_valid.h5","r")["labels"])
+    test_data = numpy.array(h5py.File("/home/users/gchalk/DNN_py/chunked_dataset/mfcc_valid117D.h5","r")["mfcc_sampled"])
+    test_labels = numpy.array(h5py.File("/home/users/gchalk/DNN_py/chunked_dataset/labels_valid.h5","r")["labels"])
+    valid_data = numpy.array(h5py.File("/home/users/gchalk/DNN_py/chunked_dataset/mfcc_test117D.h5","r")["mfcc_sampled"])
+    valid_labels = numpy.array(h5py.File("/home/users/gchalk/DNN_py/chunked_dataset/labels_test.h5","r")["labels"])
 
     test_set = (test_data,test_labels)
     test_set_x, test_set_y = shared_dataset(test_set)
-    
-    valid_set = (valid_data[1:70000,:], valid_labels[:,1:70000])
+    valid_set = (valid_data, valid_labels)
     valid_set_x, valid_set_y = shared_dataset(valid_set)
 
     gamma_sh = theano.shared(numpy.cast[theano.config.floatX](gamma), name='gamma_sh', borrow=True)
-    
     
     # compute number of minibatches for training, validation and testing
     n_train_batches = train_set_x.get_value(borrow=True).shape[0] / batch_size
@@ -383,12 +382,9 @@ def test_mlp(learning_rate_init=1.2,
     
     batch_size_NN = wij_sh.shape[1]*batch_size 
 
-
     mom_start = mom_params["start"]
     mom_end = mom_params["end"]
     mom_epoch_interval = mom_params["interval"]
-
-
 
     
     ######################
@@ -412,17 +408,13 @@ def test_mlp(learning_rate_init=1.2,
     classifier = MLP(
           rng=rng,
           input=(x,x_NN),
-          n_in=39,
+          n_in=117,
 	  hidden_layers_sizes=hidden_layers_sizes,
 	  n_out=132,
           dropout_rates=dropout_rates,
           activations=activations
     )	  
 	
-
-    #the cost we minimize during training is the negative log likelihood of
-    # the model plus the regularization terms (L1 and L2); cost is expressed
-    # here symbolically
     if dropout_rates==None:
         cost = (
             classifier.negative_log_likelihood(y, g, wij_diff)
@@ -445,7 +437,7 @@ def test_mlp(learning_rate_init=1.2,
             x: test_set_x[index * batch_size:(index + 1) * batch_size],
             y: (test_set_y.flatten())[index * batch_size:(index + 1) * batch_size]
         },
-        on_unused_input='warn'
+#        on_unused_input='warn'
     )
 #    theano.printing.pydotprint(test_model, outfile="/home/users/gchalk/test_file.png", var_with_name_simple=True)
     
@@ -456,7 +448,7 @@ def test_mlp(learning_rate_init=1.2,
             x: valid_set_x[index * batch_size:(index + 1) * batch_size],
             y: (valid_set_y.flatten())[index * batch_size:(index + 1) * batch_size]
         },
-        on_unused_input='warn'
+#        on_unused_input='warn'
     )
 #    theano.printing.pydotprint(validate_model, outfile="/home/users/gchalk/validate_file.png", var_with_name_simple=True)
 
@@ -512,7 +504,7 @@ def test_mlp(learning_rate_init=1.2,
             g: gamma_sh,            
             wij_diff: wij_sh[index * batch_size: (index + 1) * batch_size]
         },
-	on_unused_input = 'warn'
+#	on_unused_input = 'warn'
     )
 #    theano.printing.pydotprint(train_model, outfile="/home/users/gchalk/train_file.png", var_with_name_simple=True)
 
@@ -546,7 +538,7 @@ def test_mlp(learning_rate_init=1.2,
     epoch_counter = 0
     done_looping = False
     n_epochs_init = n_epochs_per_chunk    
-
+    prev_validation_loss = 0.0
 
     for l in xrange(n_epochs_set):
 
@@ -591,6 +583,8 @@ def test_mlp(learning_rate_init=1.2,
                     
                     best_validation_loss = this_validation_loss
                     best_iter = iter
+                    for param in classifier.params:
+                        cPickle.dump(param.get_value(borrow=True), best_params_cpu , -1) 
 
                     # test it on the test set
                     test_losses = [test_model(i) for i
@@ -607,9 +601,14 @@ def test_mlp(learning_rate_init=1.2,
                 else:
                     cv_error_drop = False
                 
+		if (this_validation_loss < prev_validation_loss):
+		    cv_error_drop = True
+
                 if (cv_error_drop==False):
             	       decay_learning_rate()
-                print learning_rate.get_value(borrow=True)
+#                print learning_rate.get_value(borrow=True)
+		prev_validation_loss = this_validation_loss
+
 
         if (epoch_counter == n_epochs_per_chunk):
 	    if (dataset_idx != num_datasets):
@@ -639,10 +638,10 @@ def test_mlp(learning_rate_init=1.2,
     save_error_valid.close()
     save_parameters(test_evolution,save_error_test)
     save_error_test.close()
-    for param in classifier.params:
-        cPickle.dump(param.get_value(borrow=True), final_params_cpu , -1) 
-    final_params_cpu.close()
-
+#    for param in classifier.params:
+#        cPickle.dump(param.get_value(borrow=True), final_params_cpu , -1) 
+#    final_params_cpu.close()
+    best_params_cpu.close()
 
     print(('Optimization complete. Best validation score of %f %% '
            'obtained at iteration %i, with test performance %f %%') %
