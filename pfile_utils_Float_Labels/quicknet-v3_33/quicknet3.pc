@@ -1,0 +1,11 @@
+prefix=/media/data/ichalkia/kaldi-trunk/tools/quicknet-v3_33
+exec_prefix=${prefix}
+libdir=${prefix}
+includedir=/media/data/ichalkia/kaldi-trunk/tools/quicknet-v3_33
+
+Name: QuickNet
+Description: QuickNet MLP Training Program and Library (uninstalled)
+Version: v3_33
+Requires: 
+Libs: -L${libdir}  -lquicknet3 -lpthread -lm 
+Cflags: -I${libdir} -I${includedir} -g -O2 
