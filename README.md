@@ -13,11 +13,9 @@ The basic steps to run the code are outlined as follows:
 * Configure and run src_manifold/getWint.jl,getWpen.jl,getNNneighborhoods_New.jl to get the affinity matrices Wint,Wpen as well as the manifold neighbors of each sample *in their context* (surrounding 8 frames) and the corresponding weights
 * Run src_manifold/readbin_julia.jl and pipe to pfile_create (from 
 pfile_utils_Float_Labels) to create the manifold pfile
-
-
-
-
-
+* Configure and run src_dnn/train_dnn_NN.py for the manifold-regularized DNN acoustic model: set manifold_data_spec, knn, gamma to the desired values
+* To evaluate in Kaldi, make sure you have provided a Kaldi model output file name in src_dnn/train_dnn_NN.py. Then, copy model in $working_dir/dnn.nnet and run decoding part of src_dnn/pfile_or_decode.sh
+* If you need to use rectified linear units and decode in Kaldi, make sure you have installed in Kaldi the ReLU component found here: *https://github.com/naxingyu/kaldi-nn/tree/master/src/nnet*
 
 
 
