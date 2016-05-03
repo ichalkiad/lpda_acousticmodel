@@ -84,6 +84,9 @@ def read_dataset(file_path_list, read_opts, opts, knn=None, batch_size=None, man
 	shared_xy = data_reader.make_shared_cpu()
 
     shared_x, shared_y = shared_xy
-    shared_y = T.cast(shared_y, 'int32')
+
+    if manifold==False:
+        shared_y = T.cast(shared_y, 'int32')
+
     
     return data_reader, shared_xy, shared_x, shared_y

@@ -91,9 +91,15 @@ class PfileDataRead(object):
 
         # data format for pfile reading
         # s -- sentence index; f -- frame index; d -- features; l -- label
-        self.dtype = numpy.dtype({'names': ['d', 'l'],
-                                'formats': [('>f', self.original_feat_dim), '>i'],
+        if self.manifold==True:
+            self.dtype = numpy.dtype({'names': ['d', 'l'],
+                                'formats': [('>f', self.original_feat_dim), '>f'],
                                 'offsets': [self.feat_start_column * 4, self.label_start_column * 4]})
+        else:
+            self.dtype = numpy.dtype({'names': ['d', 'l'],
+                                'formats': [('>f', self.original_feat_dim), '>i'],
+				'offsets': [self.feat_start_column * 4, self.label_start_column * 4]})
+
 
         # Read the sentence offsets
         self.file_read.seek(self.header_size + 4 * (self.label_start_column + self.num_labels) * self.total_frame_num)
