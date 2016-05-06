@@ -59,6 +59,15 @@ mkdir -p $working_dir/log
 
 num_pdfs=`gmm-info $gmmdir/final.mdl | grep pdfs | awk '{print $NF}'` || exit 1;
 
+
+train=train
+decode=decode
+
+if [ $1=$train ];
+then
+
+
+
 echo =====================================================================
 echo "           Data Split & Alignment & Feature Preparation            "
 echo =====================================================================
@@ -106,6 +115,8 @@ for set in tr95 cv05; do
   fi
 done
 
+elif [ $1=$decode ];
+then
 
 echo =====================================================================
 echo "                           Decoding                                "
@@ -120,3 +131,4 @@ if [ ! -f  $working_dir/decode.done ]; then
   touch $working_dir/decode.done
 fi
 
+fi
